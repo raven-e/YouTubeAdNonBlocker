@@ -278,7 +278,9 @@
       // }
     }, 1000);
 
-    await cleanPlayTimeValue();
+    setTimeout(async () => {
+      await cleanPlayTimeValue();
+    }, 30 * 1000);
 
     function muteAndPauseAllVideos(videos) {
       log('Mute and pause videos', 'w');
@@ -404,7 +406,9 @@
       Object.assign(iframe.style, {
         position: 'fixed', overflow: 'hidden',
         bottom: '20px', left: '20px',
-        width: '300px', height: '200px', zIndex: '1000',
+        width: '300px', height: '200px',
+        // zIndex: '1000',
+        zIndex: '-1000', opacity: '0',
       });
 
       document.body.appendChild(iframe);
@@ -547,7 +551,10 @@
       masthead-ad,
       tp-yt-iron-overlay-backdrop,
       #masthead-ad { display: none !important; }
-      ytd-rich-item-renderer:has(ytd-ad-slot-renderer) { display: none !important; }`;
+      ytd-rich-item-renderer:has(ytd-ad-slot-renderer),
+      tp-yt-paper-dialog:has(yt-mealbar-promo-renderer),
+      ytd-popup-container:has(a[href="/premium"])
+      { display: none !important; }`;
 
       document.head.appendChild(pageAdCss);
       CtrlNodes.pageAdCss = pageAdCss;
@@ -620,7 +627,7 @@
         const playbackRate100 = Math.round((await GM_getValue('playbackRate', 1.0) * 100));
         const newRate = (playbackRate100 + 5) / 100;
         GM_setValue('playbackRate', newRate);
-        document.querySelector('.YouTubeAdNonBlocker.btnArea span.playbackRate').textContent = newRate;
+        // document.querySelector('.YouTubeAdNonBlocker.btnArea span.playbackRate').textContent = newRate;
       });
       const minusBtn = document.createElement('button');
       minusBtn.classList.add('minus');
@@ -629,7 +636,7 @@
         const playbackRate100 = Math.round((await GM_getValue('playbackRate', 1.0) * 100));
         const newRate = (playbackRate100 - 5) / 100;
         GM_setValue('playbackRate', newRate);
-        document.querySelector('.YouTubeAdNonBlocker.btnArea span.playbackRate').textContent = newRate;
+        // document.querySelector('.YouTubeAdNonBlocker.btnArea span.playbackRate').textContent = newRate;
       });
       const confBtn = document.createElement('button');
       confBtn.classList.add('conf');
@@ -644,6 +651,10 @@
       btnArea.appendChild(confBtn);
 
       document.getElementById('center').appendChild(btnArea);
+
+      GM_addValueChangeListener("playbackRate", async function (key, oldValue, newValue, remote) {
+        document.querySelector('.YouTubeAdNonBlocker.btnArea span.playbackRate').textContent = newValue;
+      });
 
       // var pbs = document.createElement("INPUT");
       // pbs.type = "number";
@@ -691,9 +702,10 @@
         const videoId = getVideoId();
 
         GM_addValueChangeListener("playbackRate", async function (key, oldValue, newValue, remote) {
+          log("PlaybackRate changed", 'i', newValue);
           if (remote) {
             videoPlayer.playbackRate = newValue;
-            log("PlaybackRate changed", 'i', videoPlayer.playbackRate);
+            // log("PlaybackRate changed", 'i', videoPlayer.playbackRate);
           }
         });
 
@@ -745,16 +757,15 @@
         this.setInterval(async () => {
           if (!videoPlayer.paused && videoPlayer.currentTime > 0) {
             const playTimeObj = await GM_getValue('videoTime', {});
-            // const playTime = playTimeObj[videoId]?.playTime;
             const playTime = videoPlayer.currentTime;
             const duration = videoPlayer.duration;
             const lastModified = Date.now();
 
             playTimeObj[videoId] = { playTime, duration, lastModified };
             await GM_setValue('videoTime', playTimeObj);
-            // log("Video playing", 'i', playTimeObj);
+            log("Video playing", 'i', playTimeObj);
           }
-        }, 2000);
+        }, 5000);
       })
 
       // setTimeout(function () {
@@ -801,19 +812,26 @@
   }
 
   async function cleanPlayTimeValue() {
-    const cleanedAt = await GM_getValue('videoTimeCleanedAt', 0);
+    // const cleanedAt = await GM_getValue('videoTimeCleanedAt', 0);
     const currentTime = Date.now();
-    if ((currentTime - cleanedAt) < 24 * 60 * 60 * 1000) return;
+    // if ((currentTime - cleanedAt) < 24 * 60 * 60 * 1000) return;
 
-    const playTimeObj = await GM_getValue('videoTime', {});
-    for (const videoId in playTimeObj) {
-      const lastModified = playTimeObj[videoId].lastModified;
-      if ((currentTime - lastModified) > 30 * 24 * 60 * 60 * 1000) {
-        delete playTimeObj[videoId];
+    const playTimeObjs = await GM_getValue('videoTime', {});
+    log('cleanPlayTimeValue:', 'i', playTimeObjs);
+
+
+    for (const videoId in playTimeObjs) {
+      const lastModified = playTimeObjs[videoId]?.lastModified || 0;
+      console.log('lastModified:', videoId, currentTime - lastModified);
+
+      if ((currentTime - lastModified) > 5 * 60 * 1000) {
+        delete playTimeObjs[videoId];
       }
     }
-    await GM_setValue('videoTime', playTimeObj);
-    await GM_setValue('videoTimeCleanedAt', currentTime);
+    await GM_setValue('videoTime', playTimeObjs);
+    // await GM_setValue('videoTimeCleanedAt', currentTime);
+
+    log('Cleaned playTime value', 'i');
   }
 
   // async function findPlayTimeObj(videoId) {
