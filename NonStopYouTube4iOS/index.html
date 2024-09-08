@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Non-Stop YouTube&trade; for iOS</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+    }
+    #player-container {
+      width: 100%;
+      height: 99vh;
+    }
+  </style>
+  <!-- <script src="https://www.youtube.com/iframe_api"></script>-->
+</head>
+<body>
+  <div id="player-container"></div>
+  <dialog id="ctrl-panel">
+    <form>
+      <p>
+        <label>
+          Favorite animal:
+          <select>
+            <option value="default">Choose…</option>
+            <option>Brine shrimp</option>
+            <option>Red panda</option>
+            <option>Spider monkey</option>
+          </select>
+        </label>
+      </p>
+      <div>
+        <button value="cancel" formmethod="dialog">Cancel</button>
+        <button id="confirmBtn" value="default">Confirm</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script async src="https://www.youtube.com/iframe_api"></script>
+  <script>
+    window.addEventListener('load', () => {
+      console.log('Ready!!');
+      const dialog = document.getElementById('ctrl-panel');
+
+      const params = parseHash(window.location.hash);
+      console.log(params);
+      if (params['v']) {
+        dialog.close();
+        var player = createPlayer(params['v']);
+      } else {
+        dialog.showModal();
+      }
+
+      // var player = onYouTubeIframeAPIReady('aqz-KE-bpKQ');
+    });
+
+    window.addEventListener('hashchange', () => {
+      console.log("The hash has changed!");
+
+      const params = parseHash(window.location.hash);
+      console.log(params);
+      createPlayer(params['v']);
+    });
+
+    const parseHash = (hash = '') => {
+      const result = {};
+      (new URLSearchParams(hash.replace('#', ''))).forEach((value, key) => {
+        result[key] = value;
+      });
+
+      return result;
+    };
+  </script>
+  <script>
+
+  </script>
+  <script>
+    function createPlayer(videoId, playlist) {
+      console.log('onYouTubeIframeAPIReady:', videoId);
+
+      playlist = playlist || videoId;
+
+      return new YT.Player('player-container', {
+        height: '100%',
+        width: '100%',
+        videoId: videoId,
+        host: 'https://www.youtube-nocookie.com',
+        playerVars: {
+          origin: window.location.host,
+          autoplay: 0,
+          loop: 0,
+          playlist: playlist
+        },
+        events: {
+          onReady: onPlayerReady
+        }
+      });
+    }
+    function onPlayerReady(event) {
+      console.log('onPlayerReady:', event);
+      event.target.playVideo();
+    }
+  </script>
+</body>
+</html>
