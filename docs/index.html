@@ -79,15 +79,17 @@
         const form = document.querySelector('dialog form');
         const formParams = parseForm(form);
         const hashParams = parseHash(window.location.hash);
+        console.log(formParams, hashParams);
+
         const list = formParams.list || [];
         const videoId = hashParams['v'] || list[0];
 
-        if (list.length > 1) {
+        if (list.length > 0) {
           hashParams['v'] = videoId;
           hashParams['l'] = list.join(',');
           window.location.hash = (new URLSearchParams(hashParams)).toString();
         } else {
-          return;
+          window.location.hash = '';
         }
 
         dialog.close();
@@ -99,10 +101,7 @@
         dialog.close();
         updateForm(document.querySelector('dialog form'), params);
 
-        if (!window.YTplayer)
-          window.YTplayer = createPlayer(params['v'], params['l']);
-        else
-          window.YTplayer.cuePlaylist(params['v']);
+        window.YTplayer = createPlayer(params['v'], params['l']);
       } else {
         dialog.showModal();
       }
@@ -117,11 +116,14 @@
       const dialog = document.getElementById('ctrl-panel');
 
       if (params['v']) {
-        createPlayer(params['v']);
+        window.YTplayer = createPlayer(params['v'], params['l']);
+
         dialog.close();
         updateForm(document.querySelector('dialog form'), params);
       } else {
-        dialog.showModal();
+        // window.YTplayer = null;
+        // document.getElementById('player-container').innerHTML = '';
+        // dialog.showModal();
       }
     });
 
@@ -168,9 +170,9 @@
     };
 
     const updateForm = (form, params) => {
-      const list = params['l'].split(',').map(id => id.trim());
+      const list = params['l']?.split(',').map(id => id.trim());
       // list.unshift(params['v']);
-      params.urlList = list.join('\n');
+      params.urlList = list?.join('\n') || params['v'];
 
       for (const [key, value] of Object.entries(params)) {
         const field = form.elements[key];
