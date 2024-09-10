@@ -2,7 +2,7 @@
 // @name            Non-Stop YouTube For iOS
 // @name:ja         YouTubeバックグラウンド再生
 // @namespace       https://github.com/raven-e/YouTubeAdNonBlocker
-// @version         0.1.0
+// @version         0.1.1
 // @description     Play YouTube background on your iPhone
 // @description:ja  iPhoneでYouTubeをバックグラウンド再生します
 // @author          Raven Engi
@@ -14,11 +14,6 @@
 // @updateURL       https://github.com/raven-e/YouTubeAdNonBlocker/raw/main/NonStopYouTube4iOS.user.js
 // @downloadURL     https://github.com/raven-e/YouTubeAdNonBlocker/raw/main/NonStopYouTube4iOS.user.js
 // @require         https://cdn.jsdelivr.net/npm/qrcode_js@1.0.0/qrcode.min.js
-// @grant           GM_setValue
-// @grant           GM_getValue
-// @grant           GM_addValueChangeListener
-// @grant           GM_addElement
-// @grant           window.onurlchange
 // @run-at          document-body
 // @sandbox         JavaScript
 // @noframes
@@ -165,6 +160,11 @@
     css.classList.add('NonStopYT');
 
     css.textContent = `
+      dialog.NonStopYT:-internal-dialog-in-top-layer::backdrop {
+        position: fixed;
+        inset: 0px;
+        background: rgba(0, 0, 0, 0.5);
+      }
       .NonStopYT.btnArea button {
         background: none;
         border: none;
