@@ -11,9 +11,8 @@ dialog:-internal-dialog-in-top-layer::backdrop {
 }
 
 #player-container {
-  width: 100%;
   width: 100dvw;
-  height: 100dvh;
+  height: calc(100dvh - 8px);
 }
 
 #ctrl-panel form p {

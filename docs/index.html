@@ -13,7 +13,7 @@
   <div id="player-container"></div>
   <dialog id="ctrl-panel" method="dialog">
     <form>
-      <p><b>Non-Stop YouTube&trade; <small>v0.3.0</small></b></p>
+      <p><b>Non-Stop YouTube&trade; <small>v0.3.2</small></b></p>
       <p>
         <label for="urlList">YouTube Video IDs or URLs:</label>
         <textarea name="urlList" id="urlList" rows="8" cols="20" placeholder="aqz-KE-bpKQ"></textarea>
@@ -32,17 +32,17 @@
   <script>
     // access `aqz-KE-bpKQ` for testing
     window.addEventListener('load', () => {
-      console.log('Ready!!');
+      // console.log('Ready!!');
       const dialog = document.getElementById('ctrl-panel');
       const container = document.getElementById('player-container');
 
       container.addEventListener('click', () => {
-        console.log('Container clicked!!', dialog.open);
+        // console.log('Container clicked!!', dialog.open);
         if (!dialog.open) dialog.showModal();
       });
 
       dialog.addEventListener('close', () => {
-        console.log('Dialog closed!!');
+        // console.log('Dialog closed!!');
 
         if (window.YTplayer) {
           window.YTplayer.playVideo();
@@ -81,7 +81,8 @@
       });
 
       const res = parseUrl(window.location.href);
-      console.log(res);
+      // console.log(res);
+
       if (res['l']) {
         dialog.close();
         updateForm(document.querySelector('dialog form'), res);

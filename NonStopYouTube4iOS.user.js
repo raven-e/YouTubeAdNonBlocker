@@ -1,21 +1,26 @@
 // ==UserScript==
 // @name            Non-Stop YouTube For iOS
-// @name:ja         YouTubeバックグラウンド再生
+// @name:ja         iOS YouTube連続再生
 // @namespace       https://github.com/raven-e/YouTubeAdNonBlocker
-// @version         0.1.1
+// @version         0.2.1
 // @description     Play YouTube background on your iPhone
 // @description:ja  iPhoneでYouTubeをバックグラウンド再生します
 // @author          Raven Engi
 // @match           *://*.youtube.com/*
 // @exclude         *://accounts.youtube.com/*
-// @exclude         *://www.youtube.com/live_chat_replay*
-// @exclude         *://www.youtube.com/persist_identity*
+// @exclude         *://studio.youtube.com/*
+// @exclude         *://*.youtube.com/live_chat_replay*
+// @exclude         *://*.youtube.com/persist_identity*
+// @exclude         *://*.youtube.com/feed/history*
+// @exclude         *://*.youtube.com/@*
 // @icon            https://www.google.com/s2/favicons?sz=64&domain=youtube.com
 // @updateURL       https://github.com/raven-e/YouTubeAdNonBlocker/raw/main/NonStopYouTube4iOS.user.js
 // @downloadURL     https://github.com/raven-e/YouTubeAdNonBlocker/raw/main/NonStopYouTube4iOS.user.js
 // @require         https://cdn.jsdelivr.net/npm/qrcode_js@1.0.0/qrcode.min.js
 // @run-at          document-body
 // @sandbox         JavaScript
+// @grant        GM_setValue
+// @grant        GM_getValue
 // @noframes
 // @license MIT
 // ==/UserScript==
@@ -23,32 +28,32 @@
 (async function () {
   'use strict';
 
+  console.log('Non-Stop YouTube For iOS');
+
   window.addEventListener('load', async () => {
+    // console.log('Loaded!');
     createCSS();
     createDialog(document.body);
-    createBtn(document.getElementById('center'));
+    // waitForElm('.mobile-topbar-header-content.non-search-mode').then(elm => {
+    //   console.log(document.querySelector('.mobile-topbar-header-content.non-search-mode'));
+    //   createBtn(document.querySelector('.mobile-topbar-header-content.non-search-mode'), true);
+    // });
 
-    document.querySelector('.NonStopYT.btnArea .showModal').addEventListener('click', () => {
-      let qrArea = document.querySelector('dialog.NonStopYT .qrcode span');
-      qrArea.remove();
-      qrArea = document.createElement('span');
-      document.querySelector('dialog.NonStopYT .qrcode').appendChild(qrArea);
+    setInterval(function () {
+      if (!document.querySelector('.NonStopYT.btnArea .showModal')) {
+        if (document.querySelector('.mobile-topbar-header-content.non-search-mode')) {
+          createBtn(document.querySelector('.mobile-topbar-header-content.non-search-mode'), true);
+        } else {
+          createBtn(document.getElementById('center'));
+        }
 
-      let urlInfo = getVideoInfoFromUrl(window.location.href);
-      urlInfo = { ...urlInfo, ...getPlayList(urlInfo.videoId) };
-      if (!urlInfo.videoId) {
-        return;
+        document.querySelector('.NonStopYT.btnArea .showModal').addEventListener('click', showQRCode);
       }
 
-      const url = createURL(urlInfo);
-      document.querySelector('dialog.NonStopYT textarea').value = url;
-      createQR(qrArea, url);
-
-      const dialog = document.querySelector('dialog.NonStopYT');
-      dialog.showModal();
-    });
+    }, 1000);
 
     const dialog = document.querySelector('dialog.NonStopYT');
+    // Close dialog when click outside
     dialog.addEventListener('click', event => {
       var rect = dialog.getBoundingClientRect();
       var isInDialog = (rect.top <= event.clientY && event.clientY <= rect.top + rect.height &&
@@ -57,7 +62,42 @@
         dialog.close();
       }
     });
+
+    const typeSelector = document.querySelector('dialog.NonStopYT select.baseUrlType');
+    typeSelector.value = await GM_getValue('baseUrlType', '1');
+    typeSelector.addEventListener('change', async event => {
+      showQRCode();
+      await GM_setValue('baseUrlType', typeSelector.value);
+    });
+
+    document.querySelector('dialog.NonStopYT .openUrl').addEventListener('click', event => {
+      const url = document.querySelector('dialog.NonStopYT textarea').value;
+      window.open(url, '_blank'); // Open in new tab
+    });
   });
+
+  function showQRCode() {
+    let qrArea = document.querySelector('dialog.NonStopYT .qrcode span');
+    qrArea.remove();
+    qrArea = document.createElement('span');
+    document.querySelector('dialog.NonStopYT .qrcode').appendChild(qrArea);
+
+    let urlInfo = getVideoInfoFromUrl(window.location.href);
+    urlInfo = { ...urlInfo, ...getPlayList(urlInfo.videoId) };
+
+    if (!urlInfo.videoId) {
+      return;
+    }
+    const baseUrlType = document.querySelector('dialog.NonStopYT select.baseUrlType').value;
+
+    const url = baseUrlType === '1' ? createURLType1(urlInfo) : createURLType2(urlInfo);
+
+    document.querySelector('dialog.NonStopYT textarea').value = url;
+    createQR(qrArea, url);
+
+    const dialog = document.querySelector('dialog.NonStopYT');
+    dialog.showModal();
+  }
 
   function getVideoInfoFromUrl(urlStr) {
     const url = new URL(urlStr);
@@ -103,7 +143,7 @@
     return { idList, index };
   }
 
-  function createURL(info) {
+  function createURLType1(info) {
     let baseUrl = 'https://www.youtube-nocookie.com/embed/';
     const { videoId = '', idList = [] } = info;
     if (videoId) baseUrl += videoId;
@@ -128,23 +168,59 @@
     return url.href;
   }
 
+  function createURLType2(info) {
+    let baseUrl = 'https://raven-e.github.io/YouTubeAdNonBlocker/';
+    const { videoId = '', idList = [] } = info;
+    let index = 0;
+    if (videoId) {
+      if (idList.indexOf(videoId) === -1) {
+        idList.unshift(videoId);
+      } else {
+        index = idList.indexOf(videoId);
+      }
+    }
+
+    const params = {
+      l: idList.join(','),
+    };
+
+    const url = new URL(baseUrl);
+    for (const key in params) {
+      if (!params[key]) continue;
+      url.searchParams.set(key, params[key]);
+    }
+    url.hash = index;
+
+    return url.href;
+  }
+
   function createQR(target, url = '') {
     new QRCode(target, url);
   }
 
-  function createBtn(target) {
+  function createBtn(target, prepend = false) {
     const html = `<div class="NonStopYT btnArea"><button class="showModal">📲</button></div>`;
 
-    addHtml(target, html);
+    addHtml(target, html, prepend);
   }
 
   function createDialog(target) {
+    // console.log('createDialog');
     const html = `
       <dialog class="NonStopYT CtrlPanel" method="dialog">
         <form>
           <p class="qrcode"><span></span></p>
+          <p class="baseUrl">
+            <select name="baseUrlType" class="baseUrlType">
+              <option value="1">YouTube NoCookie</option>
+              <option value="2">YouTube Ad NonBlocker</option>
+            </select>
+          </p>
           <p>
             <textarea name="url" rows="3" cols="20"></textarea>
+          </p>
+          <p>
+            <a href="javascript:void(0)" class="openUrl">Open &gt;</a>
           </p>
           <p class="footer">
             <button value="cancel" formmethod="dialog">Cancel</button>
@@ -156,6 +232,7 @@
   }
 
   function createCSS() {
+    // console.log('createCSS');
     const css = document.createElement('style');
     css.classList.add('NonStopYT');
 
@@ -185,6 +262,15 @@
       dialog.NonStopYT form p:first-child {
         margin-top: 0;
       }
+      dialog.NonStopYT form p.baseUrl {
+        margin: 5px;
+        font-size: 14px;
+      }
+      dialog.NonStopYT form a {
+        font-size: 16px;
+        font-weight: bold;
+        margin: 8px;
+      }
       dialog.NonStopYT form textarea {
         display: block;
         width: 98%;
@@ -193,7 +279,7 @@
     document.head.appendChild(css);
   }
 
-  function addHtml(target, html = '') {
+  function addHtml(target, html = '', prepend = false) {
     let escapeHTMLPolicy = { createHTML: s => s };
     if (window.trustedTypes && window.trustedTypes.createPolicy && !window.trustedTypes.defaultPolicy) {
       escapeHTMLPolicy = window.trustedTypes.createPolicy('default', {
@@ -206,7 +292,34 @@
     const tmpDiv = document.createElement('div');
     tmpDiv.innerHTML = escapeHTMLPolicy.createHTML(html);
     tmpDiv.childNodes.forEach(node => {
-      if (node instanceof Element) target.appendChild(node);
+      if (node instanceof Element) {
+        if (prepend) {
+          target.prepend(node);
+        } else {
+          target.appendChild(node);
+        }
+      }
+    });
+  }
+
+  function waitForElm(selector) {
+    return new Promise(resolve => {
+      if (document.querySelector(selector)) {
+        return resolve(document.querySelector(selector));
+      }
+
+      const observer = new MutationObserver(mutations => {
+        if (document.querySelector(selector)) {
+          observer.disconnect();
+          resolve(document.querySelector(selector));
+        }
+      });
+
+      // If you get "parameter 1 is not of type 'Node'" error, see https://stackoverflow.com/a/77855838/492336
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
     });
   }
 })();
