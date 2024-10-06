@@ -2,7 +2,7 @@
 // @name            Non-Stop YouTube For iOS
 // @name:ja         iOS YouTube連続再生
 // @namespace       https://github.com/raven-e/YouTubeAdNonBlocker
-// @version         0.2.1
+// @version         0.3.2
 // @description     Play YouTube background on your iPhone
 // @description:ja  iPhoneでYouTubeをバックグラウンド再生します
 // @author          Raven Engi
@@ -35,7 +35,6 @@
     createCSS();
     createDialog(document.body);
     // waitForElm('.mobile-topbar-header-content.non-search-mode').then(elm => {
-    //   console.log(document.querySelector('.mobile-topbar-header-content.non-search-mode'));
     //   createBtn(document.querySelector('.mobile-topbar-header-content.non-search-mode'), true);
     // });
 
@@ -71,6 +70,7 @@
     });
 
     document.querySelector('dialog.NonStopYT .openUrl').addEventListener('click', event => {
+      event.preventDefault();
       const url = document.querySelector('dialog.NonStopYT textarea').value;
       window.open(url, '_blank'); // Open in new tab
     });
@@ -86,7 +86,11 @@
     urlInfo = { ...urlInfo, ...getPlayList(urlInfo.videoId) };
 
     if (!urlInfo.videoId) {
-      return;
+      if (urlInfo?.idList?.length) {
+        urlInfo.videoId = urlInfo.idList[0];
+      } else {
+        return; // No videoId
+      }
     }
     const baseUrlType = document.querySelector('dialog.NonStopYT select.baseUrlType').value;
 
@@ -116,6 +120,8 @@
       videoId = pathSegments[pathSegments.length - 1];
     }
 
+    if (videoId.indexOf('list') !== -1) videoId = '';
+
     return { videoId, listType, list, index, loop };
   }
 
@@ -124,21 +130,28 @@
     let index = 1;
 
     // Get playlist items
-    const l = document.querySelectorAll('ytd-playlist-panel-renderer#playlist #playlist-items a#thumbnail[href *= watch]');
+    const pcList = 'ytd-playlist-panel-renderer#playlist #playlist-items a#thumbnail[href*=watch]';
+    const spList = 'ytm-playlist-video-list-renderer .compact-media-item a.compact-media-item-image[href *= watch]';
+
+    const l = document.querySelectorAll(`${pcList}, ${spList}`);
 
     l.forEach(item => {
       const r = getVideoInfoFromUrl(item.href);
       if (r.videoId) idList.push(r.videoId);
     });
 
+    const limit = 10; // up to 15 items
     if (videoId) {
       const i = idList.indexOf(videoId);
-      if (i >= 0) {
-        index = i + 1;
+      if (i >= 0 && i < limit) {
+        index = i;
       } else {
         idList.unshift(videoId);
       }
     }
+    idList = idList.slice(0, limit);
+
+    // console.log(idList, index);
 
     return { idList, index };
   }
@@ -220,7 +233,8 @@
             <textarea name="url" rows="3" cols="20"></textarea>
           </p>
           <p>
-            <a href="javascript:void(0)" class="openUrl">Open &gt;</a>
+            <button type="button" class="openUrl">Open &gt;</button>
+            <!-- <a href="#" class="openUrl">Open &gt;</a> -->
           </p>
           <p class="footer">
             <button value="cancel" formmethod="dialog">Cancel</button>
@@ -242,13 +256,14 @@
         inset: 0px;
         background: rgba(0, 0, 0, 0.5);
       }
+      .NonStopYT button {
+        cursor: pointer;
+      }
       .NonStopYT.btnArea button {
-        background: none;
-        border: none;
+        background: none; border: none; outline: none;
         font-size: 2em;
         text-align: center;
         margin: -2px 12px 0px 12px;
-        cursor: pointer; outline: none;
       }
       .NonStopYT.btnArea button:hover {
         opacity: 0.8;
@@ -266,10 +281,14 @@
         margin: 5px;
         font-size: 14px;
       }
-      dialog.NonStopYT form a {
+      dialog.NonStopYT form .openUrl {
+        background: none; border: none; outline: none;
         font-size: 16px;
         font-weight: bold;
         margin: 8px;
+      }
+      dialog.NonStopYT form .openUrl:hover {
+        opacity: 0.6;
       }
       dialog.NonStopYT form textarea {
         display: block;
