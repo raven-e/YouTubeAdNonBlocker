@@ -2,7 +2,7 @@
 // @name            Non-Stop YouTube For iOS
 // @name:ja         iOS YouTube連続再生
 // @namespace       https://github.com/raven-e/YouTubeAdNonBlocker
-// @version         0.3.2
+// @version         0.3.3
 // @description     Play YouTube background on your iPhone
 // @description:ja  iPhoneでYouTubeをバックグラウンド再生します
 // @author          Raven Engi
@@ -131,9 +131,10 @@
 
     // Get playlist items
     const pcList = 'ytd-playlist-panel-renderer#playlist #playlist-items a#thumbnail[href*=watch]';
-    const spList = 'ytm-playlist-video-list-renderer .compact-media-item a.compact-media-item-image[href *= watch]';
+    const spList1 = 'ytm-playlist-video-list-renderer .compact-media-item a.compact-media-item-image[href*=watch]';
+    const spList2 = 'ytm-playlist-panel-renderer ytm-playlist-panel-video-renderer a.compact-media-item-image[href*=watch]';
 
-    const l = document.querySelectorAll(`${pcList}, ${spList}`);
+    const l = document.querySelectorAll(`${pcList}, ${spList1}, ${spList2}`);
 
     l.forEach(item => {
       const r = getVideoInfoFromUrl(item.href);
@@ -143,15 +144,19 @@
     const limit = 10; // up to 15 items
     if (videoId) {
       const i = idList.indexOf(videoId);
-      if (i >= 0 && i < limit) {
-        index = i;
+      if (i >= 0) {
+        if (i < limit) {
+          index = i;
+        } else {
+          idList = idList.slice(i, i + limit);
+        }
       } else {
         idList.unshift(videoId);
       }
     }
     idList = idList.slice(0, limit);
 
-    // console.log(idList, index);
+    console.log(idList, index);
 
     return { idList, index };
   }
