@@ -2,50 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="shortcut icon" type="image/x-icon"
     href="data:image/vnd.microsoft.icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAfYA8/j3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEREAABERAAAREQAAEREAABERAAAREQAAEREAABERAAAAABERAAAREQAAEREAABERAAAREQAAEREAABERAAARERERAAAREQAAEREAABERAAAREQAAEREAABERAAAREQAAAAAREQAAEREAABERAAAREQAAEREAABERAAAREQAAEREAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA">
 
   <title>Non-Stop YouTube&trade; for iOS</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: #000;
-    }
-    dialog:-internal-dialog-in-top-layer::backdrop {
-      position: fixed;
-      inset: 0px;
-      background: rgba(0, 0, 0, 0.5);
-    }
-    #player-container {
-      width: 100%;
-      height: 99vh;
-    }
-    #ctrl-panel form p {
-      margin-block-start: .6em;
-      margin-block-end: .6em;
-    }
-    #ctrl-panel form p:first-child {
-      margin-block-start: 0;
-    }
-    #ctrl-panel form textarea {
-      display: block;
-      width: 90%;
-    }
-    #ctrl-panel form #btnArea {
-      display: flex;
-      justify-content: space-evenly;
-    }
-  </style>
+  <link rel="stylesheet" href="./src/style.css">
 </head>
 <body>
   <div id="player-container"></div>
   <dialog id="ctrl-panel" method="dialog">
     <form>
+      <p><b>Non-Stop YouTube&trade; <small>v0.3.0</small></b></p>
       <p>
         <label for="urlList">YouTube Video IDs or URLs:</label>
-        <textarea name="urlList" id="urlList" rows="3" cols="20" placeholder="aqz-KE-bpKQ"></textarea>
+        <textarea name="urlList" id="urlList" rows="8" cols="20" placeholder="aqz-KE-bpKQ"></textarea>
+        <label for="rate">Play Speed:</label>
+        <input type="number" name="rate" id="rate" min="0.25" max="2" step="0.05" value="1">
+        <input type="hidden" name="startTime" id="startTime">
       </p>
       <div id="btnArea">
         <button value="cancel" formmethod="dialog">Cancel</button>
@@ -56,7 +30,7 @@
 
   <script async src="https://www.youtube.com/iframe_api"></script>
   <script>
-    // access `/#v=aqz-KE-bpKQ` for testing
+    // access `aqz-KE-bpKQ` for testing
     window.addEventListener('load', () => {
       console.log('Ready!!');
       const dialog = document.getElementById('ctrl-panel');
@@ -78,67 +52,73 @@
       document.getElementById('confirmBtn').addEventListener('click', () => {
         const form = document.querySelector('dialog form');
         const formParams = parseForm(form);
-        const hashParams = parseHash(window.location.hash);
-        console.log(formParams, hashParams);
 
-        const list = formParams.list || [];
-        const videoId = hashParams['v'] || list[0];
+        const urlParams = {
+          l: (formParams.list || []).join(','), // playlist
+          r: formParams.rate || 1, // playbackRate
+          // a: 1, // autoplay
+        };
 
-        if (list.length > 0) {
-          hashParams['v'] = videoId;
-          hashParams['l'] = list.join(',');
-          window.location.hash = (new URLSearchParams(hashParams)).toString();
-        } else {
-          window.location.hash = '';
+        const url = new URL(window.location.href);
+        if (window.YTplayer) {
+          // window.YTplayer.destroy();
+          // container.innerHTML = '';
+          const start = parseInt(YTplayer.getCurrentTime());
+          const index = YTplayer.getPlaylistIndex();
+          url.hash = `${index}-${start}`;
         }
+        url.search = new URLSearchParams(urlParams).toString();
 
-        dialog.close();
+        if (window.location.search !== url.search) {
+          window.location.href = url.toString();
+        } else {
+          if (window.YTplayer) {
+            YTplayer.playVideo();
+          } else {
+            window.location.reload();
+          }
+        }
       });
 
-      const params = parseHash(window.location.hash);
-      console.log(params);
-      if (params['v'] || params['l']) {
+      const res = parseUrl(window.location.href);
+      console.log(res);
+      if (res['l']) {
         dialog.close();
-        updateForm(document.querySelector('dialog form'), params);
+        updateForm(document.querySelector('dialog form'), res);
 
-        window.YTplayer = createPlayer(params['v'], params['l']);
+        window.YTparams = res;
+        window.YTplayer = createPlayer(res);
+
+        setInterval(() => {
+          if (!YTplayer) return;
+          if (YTplayer.getPlayerState() !== YT.PlayerState.PLAYING) return;
+
+          const start = parseInt(YTplayer.getCurrentTime());
+          const index = YTplayer.getPlaylistIndex();
+          window.location.hash = `${index}-${start}`;
+        }, 1000);
       } else {
         dialog.showModal();
       }
     });
-
-    window.addEventListener('hashchange', () => {
-      console.log("The hash has changed!");
-
-      const params = parseHash(window.location.hash);
-      console.log(params);
-
-      const dialog = document.getElementById('ctrl-panel');
-
-      if (params['v']) {
-        window.YTplayer = createPlayer(params['v'], params['l']);
-
-        dialog.close();
-        updateForm(document.querySelector('dialog form'), params);
-      } else {
-        // window.YTplayer = null;
-        // document.getElementById('player-container').innerHTML = '';
-        // dialog.showModal();
-      }
-    });
-
-
   </script>
   <script>
-    const parseHash = (hash = '') => {
-      const result = {};
-      for (const [key, value] of new URLSearchParams(hash.replace('#', ''))) {
+    const parseUrl = (url = '') => {
+      const urlObj = new URL(url);
+      const hash = urlObj.hash.replace('#', '');
+      const [index, start] = hash.split('-').map(v => parseInt(v) || 0);
+
+      const result = { index, start };
+      for (const [key, value] of urlObj.searchParams) {
+        if (key === 'index' || key === 'start') continue;
         if (result[key]) {
-          result[key] = `${result[key]},${value}`;
+          result[key] = `${result[key]},${value}`; // 配列対策
         } else {
           result[key] = value;
         }
       }
+      result.list = result['l']?.split(',').map(id => id.trim()).filter(id => id) || [];
+
       return result;
     };
 
@@ -166,13 +146,15 @@
         } catch (_error) {
           return u.trim();
         }
-      }).filter(u => u);
+      }).map(u => u.trim()).filter(u => u);
     };
 
     const updateForm = (form, params) => {
       const list = params['l']?.split(',').map(id => id.trim());
-      // list.unshift(params['v']);
+
       params.urlList = list?.join('\n') || params['v'];
+      params.rate = params['r'] || 1;
+      params.startTime = params['t'] || 0;
 
       for (const [key, value] of Object.entries(params)) {
         const field = form.elements[key];
@@ -181,38 +163,60 @@
         }
       }
     };
+
+    const resetStartTime = () => {
+      const indexOld = parseInt(window.location.hash.replace('#', '').split('-')[0]);
+      const index = YTplayer.getPlaylistIndex();
+      if (indexOld !== index) {
+        window.location.hash = `${index}-0`; // reset start time
+      }
+    };
   </script>
   <script>
-    function createPlayer(videoId, playlist) {
-      console.log('onYouTubeIframeAPIReady:', videoId);
+    function createPlayer(params = {}, targetId = 'player-container') {
+      console.log('onYouTubeIframeAPIReady:', params);
 
-      playlist = playlist || videoId;
+      const { index, list } = params;
+      const playlist = list?.join(',');
 
-      return new YT.Player('player-container', {
-        height: '100%',
-        width: '100%',
-        videoId: videoId,
+      return new YT.Player(targetId, {
+        // height: '100%',
+        width: document.getElementById(targetId).offsetWidth,
+        // videoId: videoId,
         host: 'https://www.youtube-nocookie.com',
         playerVars: {
           origin: window.location.host,
-          autoplay: 0,
           loop: 0,
-          playlist: playlist
+          playlist,
+          // autoplay, start,
         },
         events: {
-          onReady, onStateChange,
+          onReady, onStateChange, onPlaybackRateChange, onError,
         }
       });
     }
+
     function onReady(event) {
       console.log('onPlayerReady:', event);
-      event.target.playVideo();
+
+      const { l: list } = window.YTparams;
+      const [index, start] = window.location.hash.replace('#', '')
+        .split('-').map(v => parseInt(v) || 0);
+
+      console.log('onReady:', list, index, start);
+      YTplayer.cuePlaylist(list, parseInt(index), parseInt(start));
+
+      const playbackRate = window.YTparams['r'] || 1;
+      YTplayer.setPlaybackRate(parseFloat(playbackRate));
+
+      YTplayer.playVideo();
     }
 
     function onStateChange(event) {
       console.log('onStateChange:', event);
       switch (event.data) {
         case YT.PlayerState.UNSTARTED:
+          resetStartTime();
           break;
         case YT.PlayerState.ENDED:
           break;
@@ -223,11 +227,26 @@
           document.getElementById('ctrl-panel').showModal();
           break;
         case YT.PlayerState.BUFFERING:
+          resetStartTime();
           break;
         case YT.PlayerState.CUED:
           break;
         // default:
       }
+    }
+
+    function onPlaybackRateChange(event) {
+      console.log('onPlaybackRateChange:', event);
+
+      const rate = YTplayer.getPlaybackRate();
+      document.getElementById('rate').value = rate;
+    }
+
+    function onError(event) {
+      console.log('onError:', event);
+      setTimeout(() => {
+        YTplayer.nextVideo();
+      }, 1000);
     }
   </script>
 </body>

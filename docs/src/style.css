@@ -1,0 +1,42 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #000;
+}
+
+dialog:-internal-dialog-in-top-layer::backdrop {
+  position: fixed;
+  inset: 0px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+#player-container {
+  width: 100%;
+  width: 100dvw;
+  height: 100dvh;
+}
+
+#ctrl-panel form p {
+  margin-block-start: .6em;
+  margin-block-end: .6em;
+}
+
+#ctrl-panel form p:first-child {
+  margin-block-start: 0;
+}
+
+#ctrl-panel form textarea {
+  display: block;
+  width: 90%;
+}
+
+#ctrl-panel form textarea, #ctrl-panel form input {
+  margin-bottom: 10px;
+  margin-left: 2px;
+  font-size: 16px; /* ズーム防止 */
+}
+
+#ctrl-panel form #btnArea {
+  display: flex;
+  justify-content: space-evenly;
+}
