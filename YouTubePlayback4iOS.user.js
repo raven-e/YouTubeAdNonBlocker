@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name            YouTube Playback For iOS
-// @name:ja         iOS YouTube連続再生
+// @name:ja         スマホでYouTube連続再生
 // @namespace       https://github.com/raven-e/YouTubePlayBack
 // @version         0.3.5
 // @description     Play YouTube background on your iPhone
-// @description:ja  iPhoneでYouTubeをバックグラウンド再生します
+// @description:ja  iPhoneなどでYouTubeをバックグラウンド再生します
 // @author          Raven Engi
 // @match           *://*.youtube.com/*
 // @exclude         *://accounts.youtube.com/*
