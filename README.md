@@ -2,8 +2,12 @@
 
 ## Introduction
 
- **Play YouTube Video Background on iOS & Android, without Premium Account.**
- Inspired by [TheRealJoelmatic/RemoveAdblockThing](https://github.com/TheRealJoelmatic/RemoveAdblockThing/)
+ **Provide a solution to bypass (Not to Block) YouTube's ad for enjoy videos seamlessly.**
+
+## Inspired by
+- [TheRealJoelmatic/RemoveAdblockThing](https://github.com/TheRealJoelmatic/RemoveAdblockThing/)
+- [Working YouTube Ad Skipper](https://greasyfork.org/en/scripts/477383-working-youtube-ad-skipper)
+- [youtube-adb](https://greasyfork.org/en/scripts/459541-youtube-adb/code)
 
 ## Table of Contents:
 
