@@ -24,6 +24,15 @@ dialog:-internal-dialog-in-top-layer::backdrop {
   margin-block-start: 0;
 }
 
+#ctrl-panel form .title {
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+#ctrl-panel form .title small {
+  font-size: .7em;
+}
+
 #ctrl-panel form textarea {
   display: block;
   width: 92%;

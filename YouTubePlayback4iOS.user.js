@@ -2,7 +2,7 @@
 // @name            YouTube Playback For iOS
 // @name:ja         スマホでYouTube連続再生
 // @namespace       https://github.com/raven-e/YouTubePlayBack
-// @version         0.3.5
+// @version         0.3.6
 // @description     Play YouTube background on your iPhone
 // @description:ja  iPhoneなどでYouTubeをバックグラウンド再生します
 // @author          Raven Engi
@@ -187,7 +187,7 @@
   }
 
   function createURLType2(info) {
-    let baseUrl = 'https://raven-e.github.io/YouTubeAdNonBlocker/';
+    let baseUrl = 'https://raven-e.github.io/YouTubePlayBack/';
     const { videoId = '', idList = [] } = info;
     let index = 0;
     if (videoId) {
