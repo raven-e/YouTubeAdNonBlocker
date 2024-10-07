@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name            Non-Stop YouTube For iOS
+// @name            YouTube Playback For iOS
 // @name:ja         iOS YouTube連続再生
-// @namespace       https://github.com/raven-e/YouTubeAdNonBlocker
-// @version         0.3.3
+// @namespace       https://github.com/raven-e/YouTubePlayBack
+// @version         0.3.5
 // @description     Play YouTube background on your iPhone
 // @description:ja  iPhoneでYouTubeをバックグラウンド再生します
 // @author          Raven Engi
@@ -14,13 +14,13 @@
 // @exclude         *://*.youtube.com/feed/history*
 // @exclude         *://*.youtube.com/@*
 // @icon            https://www.google.com/s2/favicons?sz=64&domain=youtube.com
-// @updateURL       https://github.com/raven-e/YouTubeAdNonBlocker/raw/main/NonStopYouTube4iOS.user.js
-// @downloadURL     https://github.com/raven-e/YouTubeAdNonBlocker/raw/main/NonStopYouTube4iOS.user.js
+// @updateURL       https://github.com/raven-e/YouTubePlayBack/raw/main/YouTubePlayback4iOS.user.js
+// @downloadURL     https://github.com/raven-e/YouTubePlayBack/raw/main/YouTubePlayback4iOS.user.js
 // @require         https://cdn.jsdelivr.net/npm/qrcode_js@1.0.0/qrcode.min.js
 // @run-at          document-body
 // @sandbox         JavaScript
-// @grant        GM_setValue
-// @grant        GM_getValue
+// @grant           GM_setValue
+// @grant           GM_getValue
 // @noframes
 // @license MIT
 // ==/UserScript==
@@ -63,7 +63,7 @@
     });
 
     const typeSelector = document.querySelector('dialog.NonStopYT select.baseUrlType');
-    typeSelector.value = await GM_getValue('baseUrlType', '1');
+    typeSelector.value = await GM_getValue('baseUrlType', '2');
     typeSelector.addEventListener('change', async event => {
       showQRCode();
       await GM_setValue('baseUrlType', typeSelector.value);
@@ -223,15 +223,14 @@
   }
 
   function createDialog(target) {
-    // console.log('createDialog');
     const html = `
       <dialog class="NonStopYT CtrlPanel" method="dialog">
         <form>
           <p class="qrcode"><span></span></p>
           <p class="baseUrl">
             <select name="baseUrlType" class="baseUrlType">
-              <option value="1">YouTube NoCookie</option>
-              <option value="2">YouTube Ad NonBlocker</option>
+              <option value="2">YouTube Playback</option>
+              <option value="1">Vanilla YouTube NoCookie</option>
             </select>
           </p>
           <p>
@@ -251,7 +250,6 @@
   }
 
   function createCSS() {
-    // console.log('createCSS');
     const css = document.createElement('style');
     css.classList.add('NonStopYT');
 
@@ -326,24 +324,22 @@
     });
   }
 
-  function waitForElm(selector) {
-    return new Promise(resolve => {
-      if (document.querySelector(selector)) {
-        return resolve(document.querySelector(selector));
-      }
-
-      const observer = new MutationObserver(mutations => {
-        if (document.querySelector(selector)) {
-          observer.disconnect();
-          resolve(document.querySelector(selector));
-        }
-      });
-
-      // If you get "parameter 1 is not of type 'Node'" error, see https://stackoverflow.com/a/77855838/492336
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true
-      });
-    });
-  }
+  // function waitForElm(selector) {
+  //   return new Promise(resolve => {
+  //     if (document.querySelector(selector)) {
+  //       return resolve(document.querySelector(selector));
+  //     }
+  //     const observer = new MutationObserver(mutations => {
+  //       if (document.querySelector(selector)) {
+  //         observer.disconnect();
+  //         resolve(document.querySelector(selector));
+  //       }
+  //     });
+  //     // If you get "parameter 1 is not of type 'Node'" error, see https://stackoverflow.com/a/77855838/492336
+  //     observer.observe(document.body, {
+  //       childList: true,
+  //       subtree: true
+  //     });
+  //   });
+  // }
 })();

@@ -1,57 +1,59 @@
-# YouTube AD Non-Blocker
+# YouTube Playback on Smartphones
 
 ## Introduction
 
- **Provide a solution to bypass (Not to Block) YouTube's ad for enjoy videos seamlessly.**
+ **Play YouTube Video Background on iOS & Android, without Premium Account.**
  Inspired by [TheRealJoelmatic/RemoveAdblockThing](https://github.com/TheRealJoelmatic/RemoveAdblockThing/)
 
 ## Table of Contents:
 
 - [Introduction](#introduction)
 - [Features](#features)
-- [Installation](#installation)
+- [Usage](#usage)
+   - [Normal Usage](#normal-usage)
+   - [Advanced Usage](#advanced-usage)
 - [License](#license)
 - [Disclaimer](#disclaimer)
 
 ## Features
 
-|          | <font color="green">YouTube AD Non-Blocker (This Project)</font> | [Remove Adblock Thing](https://github.com/TheRealJoelmatic/RemoveAdblockThing/) | Others AD Blockers |
-|----------|:----------:|:----------:|:----------:|
-|   Remove Page AD   |   ✅   |   ✅   |   ✅   |
-|   Skip Video AD   |   ✅   |   ✅   |   ✅   |
-|   Bypass Ad Blockers Test   |   ✅   |   ✅   |   ❌   |
-|   Keep Play Rate   |   ✅   |   ❌   |   ❌   |
-|   Keep Timestamp   |   ✅   |   ❌   |   ❌   |
-|   Auto Play Next Video   |   ✅   |   ❌   |   ❌   |
-|   Update YouTube Watched Status    |   ⚠️   |   ❌   |   ❌   |
-|   Play Member Only Video[^1]   |   ⚠️   |   ❌   |   ❔   |
-|   YT Mini Player Support   |   ❌   |   ❌   |   ❌   |
+- [x] Play YouTube video background.
+- [x] Skip ADs when playing videos[^1].
+- [x] Play videos in a playlist[^2].
+- [x] Disable YouTube AutoPause.
+- [ ] Play Members only video.
 
-- ✅: Support.
-- ⚠️: Works, but not perfect.
-- ❌: Not support / Work at it.
-- ❔: Status unknow.
+[^1]: In very rare cases, YouTube will play some AD before playing.
+[^2]: Up to 10 items. More items will cause Errors.
 
-[^1]: User must have the membership.
+## Usage
+### Normal Usage
+1. Open [raven-e.github.io/YouTubePlayBack](https://raven-e.github.io/YouTubePlayBack/).
 
-## Installation
+2. Paste YouTube Video URLs or Video IDs, multiple URLs in multiple lines.
 
-1. **Install Tampermonkey**:
+3. Click **[Confirm]** button to play.
+
+4. Inactive video page and re-acive background player. 
+
+### Advanced Usage
+Install **[This Script](https://github.com/raven-e/YouTubePlayBack/raw/main/YouTubePlayback4iOS.user.js)** on Your PC Browser and scan QR code to tranfer video infos to your Smartphones
+
+1. **Install Tampermonkey on Your PC Browser**:
    If you haven't already, you need to install the Tampermonkey browser extension. You can find it for various browsers:
    - [Tampermonkey for Chrome](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
    - [Tampermonkey for Firefox](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/)
    - [Tampermonkey for Edge](https://microsoftedge.microsoft.com/addons/detail/tampermonkey/iikmkjmpaadaobahmlepeloendndfphd)
    - [Tampermonkey for Opera/OperaGX](https://addons.opera.com/en-gb/extensions/details/tampermonkey-beta/)
 
-2. **Install the Script**:
-
+2. **Install the Script on Your PC Browser**:
+   **[YouTubePlayback4iOS.user.js](https://github.com/raven-e/YouTubePlayBack/raw/main/YouTubePlayback4iOS.user.js)**
 
 3. **Enable the Script**:
    Enable the script by clicking the switch next to the script name in the Tampermonkey Dashboard.
 
-4. **Disable your adblocker**:
-   Whitelist YouTube on any Chrome extensions that block ads or any third-party things that disable ads.
-
+4. **Click 📲 Button and Scan QR code**:
+   Scan QR code to active Video Player page on your Phones.
 
 Note: This also allows you to watch videos when your video player is banned from using an adblock.
 
@@ -61,4 +63,4 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Disclaimer
 
-Please note that "YouTube AD Non-Blocker" is not made by YouTube™ or affiliated with YouTube™. YouTube™ is a trademark of Google LLC.
+Please note that "YouTube Playback" is not made by YouTube™ or affiliated with YouTube™. YouTube™ is a trademark of Google LLC.

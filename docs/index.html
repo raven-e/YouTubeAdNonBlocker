@@ -6,17 +6,19 @@
   <link rel="shortcut icon" type="image/x-icon"
     href="data:image/vnd.microsoft.icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAfYA8/j3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEREAABERAAAREQAAEREAABERAAAREQAAEREAABERAAAAABERAAAREQAAEREAABERAAAREQAAEREAABERAAARERERAAAREQAAEREAABERAAAREQAAEREAABERAAAREQAAAAAREQAAEREAABERAAAREQAAEREAABERAAAREQAAEREAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA">
 
-  <title>Non-Stop YouTube&trade; for iOS</title>
+  <title>YouTube&reg; Playback for iOS</title>
   <link rel="stylesheet" href="./src/style.css">
 </head>
 <body>
   <div id="player-container"></div>
   <dialog id="ctrl-panel" method="dialog">
     <form>
-      <p><b>Non-Stop YouTube&trade; <small>v0.3.3</small></b></p>
+      <p><b>YouTube&reg; Playback <small>v0.3.5</small></b></p>
       <p>
         <label for="urlList">YouTube Video IDs or URLs:</label>
-        <textarea name="urlList" id="urlList" rows="8" cols="20" placeholder="aqz-KE-bpKQ"></textarea>
+        <textarea name="urlList" id="urlList" rows="8" cols="25"
+        placeholder="C0DPdy98e4c
+https://youtu.be/aqz-KE-bpKQ"></textarea>
         <label for="rate">Play Speed:</label>
         <input type="number" name="rate" id="rate" min="0.25" max="2" step="0.05" value="1">
         <input type="hidden" name="startTime" id="startTime">
@@ -34,19 +36,13 @@
     window.addEventListener('load', () => {
       // console.log('Ready!!');
       const dialog = document.getElementById('ctrl-panel');
-      // const container = document.getElementById('player-container');
 
       document.querySelector('body').addEventListener('click', () => {
-        // console.log('Container clicked!!', dialog.open);
         if (!dialog.open) dialog.showModal();
       });
 
       dialog.addEventListener('close', () => {
-        // console.log('Dialog closed!!');
-
-        if (window.YTplayer) {
-          window.YTplayer.playVideo();
-        }
+        if (window.YTplayer) window.YTplayer.playVideo();
       });
 
       document.getElementById('confirmBtn').addEventListener('click', () => {
@@ -189,7 +185,7 @@
           origin: window.location.host,
           loop: 0,
           playlist,
-          // autoplay, start,
+          autoplay: 1,
         },
         events: {
           onReady, onStateChange, onPlaybackRateChange, onError,
